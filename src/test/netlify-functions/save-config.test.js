@@ -1,7 +1,12 @@
 // @vitest-environment node
+//
+// Deliberately NOT inside netlify/functions/ — Netlify's build treats every
+// file directly in that directory as a deployable function, and a name like
+// "save-config.test" isn't a legal function name (periods aren't allowed).
+// That broke a real deploy once; keep function tests out of that directory.
 import { describe, it, expect } from 'vitest';
-import saveConfig from './save-config.js';
-import { RESERVED_SLUGS } from '../../src/lib/slug.js';
+import saveConfig from '../../../netlify/functions/save-config.js';
+import { RESERVED_SLUGS } from '../../lib/slug.js';
 
 function req(body, method = 'POST') {
   return new Request('http://localhost/.netlify/functions/save-config', {
