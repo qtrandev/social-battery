@@ -105,19 +105,16 @@ export default function ViewBattery() {
         </div>
       )}
 
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="h-full flex flex-col items-center justify-center gap-[clamp(0.25rem,2dvh,1rem)] overflow-hidden py-[clamp(0.25rem,2dvh,1rem)]">
         {config.profileImageUrl && (
           <img
             src={config.profileImageUrl}
             alt=""
-            className="w-20 h-20 rounded-full object-cover border-2 border-white/70 shadow-lg"
+            className="shrink-0 rounded-full object-cover border-2 border-white/70 shadow-lg"
+            style={{ width: 'clamp(1.75rem, 8dvh, 5rem)', height: 'clamp(1.75rem, 8dvh, 5rem)' }}
           />
         )}
-        <h1
-          className={`font-bold text-white text-legible ${
-            orientation === 'landscape' ? 'text-5xl' : 'text-3xl'
-          }`}
-        >
+        <h1 className="shrink-0 font-bold text-white text-legible text-[clamp(1rem,5dvh,3rem)]">
           {displayName}
         </h1>
 
@@ -134,7 +131,13 @@ export default function ViewBattery() {
       </div>
 
       {editToken && (
-        <OwnerPanel slug={slug} editToken={editToken} onSetLevel={applyOverride} />
+        <OwnerPanel
+          slug={slug}
+          editToken={editToken}
+          onSetLevel={applyOverride}
+          awake={battery.awake}
+          nextWake={battery.nextWake}
+        />
       )}
 
       {showSettings && (

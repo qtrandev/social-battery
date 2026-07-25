@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { pinVersion } from '../lib/api.js';
+import { formatClockTime } from '../lib/time.js';
 
 const PRESETS = [20, 50, 75, 100];
 
-export default function OwnerPanel({ slug, editToken, onSetLevel }) {
+export default function OwnerPanel({ slug, editToken, onSetLevel, awake, nextWake }) {
   const [open, setOpen] = useState(false);
   const [pinning, setPinning] = useState(false);
   const [pinnedVersion, setPinnedVersion] = useState(null);
@@ -39,18 +40,26 @@ export default function OwnerPanel({ slug, editToken, onSetLevel }) {
         <div className="mt-2 w-64 rounded-xl bg-black/70 backdrop-blur-md p-4 flex flex-col gap-4 text-white">
           <div>
             <p className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Set level</p>
-            <div className="flex gap-2">
-              {PRESETS.map(p => (
-                <button
-                  key={p}
-                  onClick={() => onSetLevel(p)}
-                  className="flex-1 rounded-lg bg-white/10 py-1.5 text-sm font-semibold hover:bg-white/20 transition-colors"
-                >
-                  {p}%
-                </button>
-              ))}
-            </div>
-            <p className="mt-2 text-[11px] text-white/40">Or drag the battery itself.</p>
+            {awake ? (
+              <>
+                <div className="flex gap-2">
+                  {PRESETS.map(p => (
+                    <button
+                      key={p}
+                      onClick={() => onSetLevel(p)}
+                      className="flex-1 rounded-lg bg-white/10 py-1.5 text-sm font-semibold hover:bg-white/20 transition-colors"
+                    >
+                      {p}%
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] text-white/40">Or drag the battery itself.</p>
+              </>
+            ) : (
+              <p className="text-xs text-white/40">
+                Recharging{nextWake ? ` until ${formatClockTime(nextWake)}` : ''} - level updates resume at wake.
+              </p>
+            )}
           </div>
 
           <button

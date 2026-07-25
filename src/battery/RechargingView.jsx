@@ -1,5 +1,7 @@
+import { formatClockTime } from '../lib/time.js';
+
 export default function RechargingView({ nextWake }) {
-  const time = nextWake?.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const time = nextWake && formatClockTime(nextWake);
 
   return (
     <div className="flex flex-col items-center gap-4 px-6 text-center">

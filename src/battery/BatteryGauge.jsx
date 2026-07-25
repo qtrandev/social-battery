@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { DEFAULT_THEME, bandForLevel, bandRanges, bandMidpoint, gradientStops } from './themes.js';
+import { WORK_END_VALUE } from './model.js';
 
 /**
  * The battery-shaped meter itself — landscape renders as the familiar wide
@@ -62,12 +63,12 @@ export default function BatteryGauge({ level, theme = DEFAULT_THEME, orientation
     <div
       className={
         isLandscape
-          ? 'flex flex-col items-center gap-6 w-full max-w-4xl px-6'
-          : 'flex flex-col items-center gap-6 w-full max-w-sm px-6'
+          ? 'flex flex-1 min-h-0 flex-col items-center justify-center gap-[clamp(0.5rem,3dvh,1.5rem)] w-full max-w-4xl px-6'
+          : 'flex flex-1 min-h-0 flex-col items-center justify-center gap-[clamp(0.5rem,3dvh,1.5rem)] w-full max-w-sm px-6'
       }
     >
       {/* ── Face row, like the pin's row of smileys — tap one to jump there, if editable ── */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 shrink-0">
         {ranges.map(r => {
           const isActive = r.max === band.max;
           const style = {
@@ -80,83 +81,99 @@ export default function BatteryGauge({ level, theme = DEFAULT_THEME, orientation
               type="button"
               onClick={() => onCommit(bandMidpoint(r))}
               aria-label={`Set level to ${r.mood}`}
-              className="text-2xl transition-all duration-500 cursor-pointer"
+              className="text-[clamp(1rem,4dvh,1.5rem)] transition-all duration-500 cursor-pointer"
               style={style}
             >
               {r.face}
             </button>
           ) : (
-            <span key={r.max} className="text-2xl transition-all duration-500" style={style}>
+            <span key={r.max} className="text-[clamp(1rem,4dvh,1.5rem)] transition-all duration-500" style={style}>
               {r.face}
             </span>
           );
         })}
       </div>
 
-      {/* ── The battery shape ── */}
-      <div
-        className={
-          isLandscape
-            ? 'relative w-full aspect-[5/2]'
-            : 'relative h-[60vh] max-h-[520px] aspect-[2/5]'
-        }
-      >
-        {/* nub */}
+      {/* ── The battery shape — always claims the full width (landscape) or
+          full height (portrait) of the space it's given, so it reads big;
+          the other dimension follows the usual battery proportions but
+          self-limits via container query units so it can't overflow on a
+          short/narrow screen (it just reads flatter/narrower there) ── */}
+      <div className="relative flex-1 min-h-0 w-full flex items-center justify-center [container-type:size]">
         <div
           className={
             isLandscape
-              ? 'absolute -right-3 top-1/2 -translate-y-1/2 w-3 h-1/4 rounded-r-md bg-white/80'
-              : 'absolute -top-3 left-1/2 -translate-x-1/2 h-3 w-1/4 rounded-t-md bg-white/80'
+              ? 'relative w-full h-[min(40cqw,100cqh)]'
+              : 'relative h-full w-[min(40cqh,100cqw)]'
           }
-        />
-        {/* outline — the draggable track, when editable */}
-        <div
-          ref={trackRef}
-          role={editable ? 'slider' : undefined}
-          aria-label={editable ? 'Social battery level' : undefined}
-          aria-valuenow={editable ? Math.round(clamped) : undefined}
-          aria-valuemin={editable ? 0 : undefined}
-          aria-valuemax={editable ? 100 : undefined}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerCancel}
-          className={`relative w-full h-full rounded-[2rem] border-[6px] border-white/80 overflow-hidden bg-black/20 ${
-            editable ? 'cursor-grab active:cursor-grabbing touch-none' : ''
-          }`}
         >
-          {/* fill */}
+          {/* nub */}
           <div
-            className={`absolute bottom-0 left-0 ${isDragging ? '' :'transition-[width,height] duration-1000 ease-out'}`}
-            style={{
-              background: gradientCss,
-              width: isLandscape ? `${clamped}%` : '100%',
-              height: isLandscape ? '100%' : `${clamped}%`,
-            }}
-          />
-          {/* lightning bolt at the fill boundary — also the drag handle */}
-          <div
-            className={`absolute flex items-center justify-center drop-shadow-[0_0_6px_rgba(0,0,0,0.5)] ${
-              isDragging ? '' :'transition-all duration-1000 ease-out'
-            }`}
-            style={
+            className={
               isLandscape
-                ? { left: `${clamped}%`, top: '50%', transform: 'translate(-50%, -50%)' }
-                : { bottom: `${clamped}%`, left: '50%', transform: 'translate(-50%, 50%)' }
+                ? 'absolute -right-3 top-1/2 -translate-y-1/2 w-3 h-1/4 rounded-r-md bg-white/80'
+                : 'absolute -top-3 left-1/2 -translate-x-1/2 h-3 w-1/4 rounded-t-md bg-white/80'
             }
+          />
+          {/* outline — the draggable track, when editable */}
+          <div
+            ref={trackRef}
+            role={editable ? 'slider' : undefined}
+            aria-label={editable ? 'Social battery level' : undefined}
+            aria-valuenow={editable ? Math.round(clamped) : undefined}
+            aria-valuemin={editable ? 0 : undefined}
+            aria-valuemax={editable ? 100 : undefined}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerCancel}
+            className={`relative w-full h-full rounded-[2rem] border-[6px] border-white/80 overflow-hidden bg-black/20 ${
+              editable ? 'cursor-grab active:cursor-grabbing touch-none' : ''
+            }`}
           >
-            <span className={`text-3xl text-white ${editable ? 'scale-125' : ''}`}>⚡</span>
+            {/* fill */}
+            <div
+              className={`absolute bottom-0 left-0 ${isDragging ? '' :'transition-[width,height] duration-1000 ease-out'}`}
+              style={{
+                background: gradientCss,
+                width: isLandscape ? `${clamped}%` : '100%',
+                height: isLandscape ? '100%' : `${clamped}%`,
+              }}
+            />
+            {/* work-end reference — where the default trajectory expects you to be by work-end, always */}
+            <div
+              data-testid="work-end-marker"
+              className="absolute bg-white/40 pointer-events-none"
+              style={
+                isLandscape
+                  ? { left: `${WORK_END_VALUE}%`, top: 0, bottom: 0, width: '2px', transform: 'translateX(-50%)' }
+                  : { bottom: `${WORK_END_VALUE}%`, left: 0, right: 0, height: '2px', transform: 'translateY(50%)' }
+              }
+            />
+            {/* lightning bolt at the fill boundary — also the drag handle */}
+            <div
+              className={`absolute flex items-center justify-center drop-shadow-[0_0_6px_rgba(0,0,0,0.5)] ${
+                isDragging ? '' :'transition-all duration-1000 ease-out'
+              }`}
+              style={
+                isLandscape
+                  ? { left: `${clamped}%`, top: '50%', transform: 'translate(-50%, -50%)' }
+                  : { bottom: `${clamped}%`, left: '50%', transform: 'translate(-50%, 50%)' }
+              }
+            >
+              <span className={`text-3xl text-white ${editable ? 'scale-125' : ''}`}>⚡</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Readout ── */}
-      <div className="flex flex-col items-center gap-1">
+      {/* ── Readout — sized off dvh, not a fixed rem, so it yields room to the gauge on short screens ── */}
+      <div className="flex flex-col items-center gap-1 shrink-0">
         <div className="flex items-baseline gap-3">
-          <span className="text-6xl">{band.face}</span>
-          <span className="text-5xl font-black tabular-nums text-white text-legible">{Math.round(clamped)}%</span>
+          <span className="text-[clamp(1.75rem,7dvh,3.75rem)]">{band.face}</span>
+          <span className="text-[clamp(1.5rem,6dvh,3rem)] font-black tabular-nums text-white text-legible">{Math.round(clamped)}%</span>
         </div>
-        <p className={`text-white font-medium text-legible ${isLandscape ? 'text-3xl' : 'text-2xl'}`}>{band.mood}</p>
+        <p className="text-[clamp(0.9rem,3dvh,1.875rem)] text-white font-medium text-legible">{band.mood}</p>
       </div>
     </div>
   );

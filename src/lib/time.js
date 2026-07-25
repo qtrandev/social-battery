@@ -47,3 +47,8 @@ export function zonedTimeToUtc(dateStr, time, timeZone) {
   const offset = timezoneOffsetMinutes(guess, timeZone);
   return new Date(guess.getTime() - offset * 60000);
 }
+
+/** "7:00 AM" in the viewer's local time, for UI copy — not timezone-aware by design. */
+export function formatClockTime(date) {
+  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}

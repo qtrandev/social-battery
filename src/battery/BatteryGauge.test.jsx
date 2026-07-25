@@ -108,3 +108,20 @@ describe('BatteryGauge — dragging (portrait: bottom=0%, top=100%)', () => {
     expect(onCommit).toHaveBeenCalledWith(75);
   });
 });
+
+describe('BatteryGauge — work-end reference marker', () => {
+  it('sits at the 50% position (WORK_END_VALUE) along the fill axis in landscape', () => {
+    render(<BatteryGauge level={80} theme="energetic" orientation="landscape" />);
+    expect(screen.getByTestId('work-end-marker').style.left).toBe('50%');
+  });
+
+  it('sits at the 50% position along the fill axis in portrait, on the bottom axis', () => {
+    render(<BatteryGauge level={80} theme="energetic" orientation="portrait" />);
+    expect(screen.getByTestId('work-end-marker').style.bottom).toBe('50%');
+  });
+
+  it('renders regardless of current level or whether the gauge is editable', () => {
+    render(<BatteryGauge level={5} theme="energetic" orientation="landscape" onCommit={() => {}} />);
+    expect(screen.getByTestId('work-end-marker')).toBeInTheDocument();
+  });
+});

@@ -24,7 +24,7 @@ export default function FullscreenShell({ children, background, homeHref = '/', 
     <div
       ref={rootRef}
       data-orientation={orientation}
-      className="relative min-h-screen w-full overflow-hidden"
+      className="relative h-dvh w-full overflow-hidden"
       style={background ? { background } : undefined}
     >
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-2">

@@ -104,17 +104,15 @@ export default function CreateBattery() {
           <input value={form.name} onChange={set('name')} placeholder="Quyen" className="input" />
         </Field>
 
-        <div className="grid grid-cols-3 gap-4">
-          <Field label="Wake">
-            <input type="time" value={form.wakeTime} onChange={set('wakeTime')} required className="input" />
-          </Field>
-          <Field label="Work ends">
-            <input type="time" value={form.workEndTime} onChange={set('workEndTime')} required className="input" />
-          </Field>
-          <Field label="Sleep">
-            <input type="time" value={form.sleepTime} onChange={set('sleepTime')} required className="input" />
-          </Field>
-        </div>
+        <Field label="Wake">
+          <input type="time" value={form.wakeTime} onChange={set('wakeTime')} required className="input" />
+        </Field>
+        <Field label="Work ends">
+          <input type="time" value={form.workEndTime} onChange={set('workEndTime')} required className="input" />
+        </Field>
+        <Field label="Sleep">
+          <input type="time" value={form.sleepTime} onChange={set('sleepTime')} required className="input" />
+        </Field>
 
         <Field label="Timezone" hint="Detected automatically - the battery runs on this clock no matter who's viewing.">
           <input value={form.timezone} onChange={set('timezone')} required className="input" />

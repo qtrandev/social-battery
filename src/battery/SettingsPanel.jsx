@@ -70,17 +70,15 @@ export default function SettingsPanel({ slug, editToken, config, onClose, onSave
           <input value={form.name} onChange={set('name')} placeholder={slug} className="input" />
         </Field>
 
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Wake">
-            <input type="time" value={form.wakeTime} onChange={set('wakeTime')} required className="input" />
-          </Field>
-          <Field label="Work ends">
-            <input type="time" value={form.workEndTime} onChange={set('workEndTime')} required className="input" />
-          </Field>
-          <Field label="Sleep">
-            <input type="time" value={form.sleepTime} onChange={set('sleepTime')} required className="input" />
-          </Field>
-        </div>
+        <Field label="Wake">
+          <input type="time" value={form.wakeTime} onChange={set('wakeTime')} required className="input" />
+        </Field>
+        <Field label="Work ends">
+          <input type="time" value={form.workEndTime} onChange={set('workEndTime')} required className="input" />
+        </Field>
+        <Field label="Sleep">
+          <input type="time" value={form.sleepTime} onChange={set('sleepTime')} required className="input" />
+        </Field>
 
         <Field label="Theme">
           <select value={form.theme} onChange={set('theme')} className="input">
