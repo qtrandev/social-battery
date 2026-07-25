@@ -19,9 +19,16 @@ export default function ViewBattery() {
   const [config, setConfig] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | ok | not_found | error
   const [showSettings, setShowSettings] = useState(false);
+  const [guestLevel, setGuestLevel] = useState(null);
   const now = useNow(30_000);
   const orientation = useOrientation();
   const editToken = !version ? getEditToken(slug) : null;
+
+  // Guests (no editToken) can still tap/drag the gauge to see "what if" —
+  // it's purely local, never saved, so someone can temporarily reuse a
+  // shared display without touching the owner's actual status. Reset it
+  // whenever we land on a different battery.
+  useEffect(() => { setGuestLevel(null); }, [slug, version]);
 
   const load = useCallback(async () => {
     try {
@@ -120,13 +127,19 @@ export default function ViewBattery() {
 
         {battery.awake ? (
           <BatteryGauge
-            level={battery.level}
+            level={editToken ? battery.level : guestLevel ?? battery.level}
             theme={config.theme}
             orientation={orientation}
-            onCommit={editToken ? applyOverride : undefined}
+            onCommit={editToken ? applyOverride : setGuestLevel}
           />
         ) : (
           <RechargingView nextWake={battery.nextWake} />
+        )}
+
+        {!editToken && guestLevel !== null && (
+          <p className="absolute bottom-2 inset-x-0 text-center text-xs text-white/50 text-legible">
+            Just for you — not saved, resets on reload
+          </p>
         )}
       </div>
 
