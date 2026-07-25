@@ -113,7 +113,13 @@ export default function ViewBattery() {
             className="w-20 h-20 rounded-full object-cover border-2 border-white/70 shadow-lg"
           />
         )}
-        <h1 className="text-xl font-bold text-white text-legible">{displayName}</h1>
+        <h1
+          className={`font-bold text-white text-legible ${
+            orientation === 'landscape' ? 'text-5xl' : 'text-3xl'
+          }`}
+        >
+          {displayName}
+        </h1>
 
         {battery.awake ? (
           <BatteryGauge

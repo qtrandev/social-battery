@@ -156,7 +156,7 @@ export default function BatteryGauge({ level, theme = DEFAULT_THEME, orientation
           <span className="text-6xl">{band.face}</span>
           <span className="text-5xl font-black tabular-nums text-white text-legible">{Math.round(clamped)}%</span>
         </div>
-        <p className="text-lg text-white font-medium text-legible">{band.mood}</p>
+        <p className={`text-white font-medium text-legible ${isLandscape ? 'text-3xl' : 'text-2xl'}`}>{band.mood}</p>
       </div>
     </div>
   );

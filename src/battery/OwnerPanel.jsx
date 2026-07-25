@@ -16,7 +16,7 @@ export default function OwnerPanel({ slug, editToken, onSetLevel }) {
       const { version } = await pinVersion(slug, editToken);
       setPinnedVersion(version);
     } catch {
-      setPinError('Could not pin a version — try again.');
+      setPinError('Could not pin a version - try again.');
     } finally {
       setPinning(false);
     }

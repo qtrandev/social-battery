@@ -17,7 +17,7 @@ export default function Home() {
         <span className="text-6xl">🔋</span>
         <h1 className="text-4xl font-black text-white">Social Battery</h1>
         <p className="max-w-md text-white/60">
-          A live status page for your energy level — leave it fullscreen on a monitor,
+          A live status page for your energy level - leave it fullscreen on a monitor,
           or prop your phone up, so people can see at a glance without asking.
         </p>
       </div>

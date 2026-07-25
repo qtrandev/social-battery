@@ -42,7 +42,7 @@ export default function SettingsPanel({ slug, editToken, config, onClose, onSave
         clearEditToken(slug);
         onClose();
       } else {
-        setError('Could not save — try again.');
+        setError('Could not save - try again.');
       }
     } finally {
       setSaving(false);

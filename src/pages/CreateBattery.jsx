@@ -46,7 +46,7 @@ export default function CreateBattery() {
       return;
     }
     if (RESERVED_SLUGS.has(slug)) {
-      setError('That key is reserved — try another.');
+      setError('That key is reserved - try another.');
       return;
     }
 
@@ -69,11 +69,11 @@ export default function CreateBattery() {
       navigate(`/${slug}`);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'taken') {
-        setError('That key is already taken — try another.');
+        setError('That key is already taken - try another.');
       } else if (err instanceof ApiError && err.code === 'reserved') {
         setError("That key isn't available.");
       } else {
-        setError('Something went wrong — try again.');
+        setError('Something went wrong - try again.');
       }
     } finally {
       setSubmitting(false);
@@ -86,7 +86,7 @@ export default function CreateBattery() {
         <div>
           <h1 className="text-2xl font-black text-white">Set up your battery</h1>
           <p className="text-white/50 text-sm mt-1">
-            This becomes your URL — pick something short and yours.
+            This becomes your URL - pick something short and yours.
           </p>
         </div>
 
@@ -100,7 +100,7 @@ export default function CreateBattery() {
           />
         </Field>
 
-        <Field label="Display name" hint="Auto-filled from your key — edit freely to override.">
+        <Field label="Display name" hint="Auto-filled from your key - edit freely to override.">
           <input value={form.name} onChange={set('name')} placeholder="Quyen" className="input" />
         </Field>
 
@@ -116,7 +116,7 @@ export default function CreateBattery() {
           </Field>
         </div>
 
-        <Field label="Timezone" hint="Detected automatically — the battery runs on this clock no matter who's viewing.">
+        <Field label="Timezone" hint="Detected automatically - the battery runs on this clock no matter who's viewing.">
           <input value={form.timezone} onChange={set('timezone')} required className="input" />
         </Field>
 
@@ -128,11 +128,11 @@ export default function CreateBattery() {
           </select>
         </Field>
 
-        <Field label="Profile image URL" hint="Optional — we only store the link, never the image itself.">
+        <Field label="Profile image URL" hint="Optional - we only store the link, never the image itself.">
           <input value={form.profileImageUrl} onChange={set('profileImageUrl')} placeholder="https://…" className="input" />
         </Field>
 
-        <Field label="Cover image URL" hint="Optional — falls back to the theme gradient if left blank.">
+        <Field label="Cover image URL" hint="Optional - falls back to the theme gradient if left blank.">
           <input value={form.coverImageUrl} onChange={set('coverImageUrl')} placeholder="https://…" className="input" />
         </Field>
 
