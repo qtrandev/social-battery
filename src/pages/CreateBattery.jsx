@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router';
 import { createConfig, ApiError } from '../lib/api.js';
 import { setEditToken } from '../lib/ownership.js';
 import { THEME_KEYS, THEMES, DEFAULT_THEME } from '../battery/themes.js';
-import { isValidSlug } from '../lib/slug.js';
+import { SLUG_REGEX, RESERVED_SLUGS } from '../lib/slug.js';
+import { deriveDisplayNameFromKey } from '../lib/displayName.js';
 
 const DEFAULT_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -12,6 +13,8 @@ export default function CreateBattery() {
   const [form, setForm] = useState({
     slug: '',
     name: '',
+    // 'auto': Display name tracks Key. 'manual': user has typed their own — stop syncing.
+    nameSource: 'auto',
     wakeTime: '07:00',
     workEndTime: '18:00',
     sleepTime: '00:00',
@@ -27,13 +30,35 @@ export default function CreateBattery() {
     return e => setForm(prev => ({ ...prev, [field]: e.target.value }));
   }
 
+  function handleKeyChange(e) {
+    const key = e.target.value;
+    setForm(prev =>
+      prev.nameSource === 'auto'
+        ? { ...prev, slug: key, name: deriveDisplayNameFromKey(key) }
+        : { ...prev, slug: key }
+    );
+  }
+
+  function handleNameChange(e) {
+    const value = e.target.value;
+    setForm(prev =>
+      value === ''
+        ? { ...prev, name: deriveDisplayNameFromKey(prev.slug), nameSource: 'auto' }
+        : { ...prev, name: value, nameSource: 'manual' }
+    );
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
 
     const slug = form.slug.trim().toLowerCase();
-    if (!isValidSlug(slug)) {
-      setError('Slug must be 2-40 characters: lowercase letters, numbers, hyphens.');
+    if (!SLUG_REGEX.test(slug)) {
+      setError('Key must be 2-40 characters: lowercase letters, numbers, hyphens.');
+      return;
+    }
+    if (RESERVED_SLUGS.has(slug)) {
+      setError('That key is reserved — try another.');
       return;
     }
 
@@ -41,7 +66,7 @@ export default function CreateBattery() {
     try {
       const payload = {
         slug,
-        name: form.name.trim() || slug,
+        name: form.name.trim() || null,
         wakeTime: form.wakeTime,
         workEndTime: form.workEndTime,
         sleepTime: form.sleepTime,
@@ -55,9 +80,9 @@ export default function CreateBattery() {
       navigate(`/${slug}`);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'taken') {
-        setError('That slug is already taken — try another.');
+        setError('That key is already taken — try another.');
       } else if (err instanceof ApiError && err.code === 'reserved') {
-        setError("That slug isn't available.");
+        setError("That key isn't available.");
       } else {
         setError('Something went wrong — try again.');
       }
@@ -76,18 +101,18 @@ export default function CreateBattery() {
           </p>
         </div>
 
-        <Field label="Slug" hint="social-battery.example/your-slug">
+        <Field label="Key" hint="social-battery.example/your-key">
           <input
             value={form.slug}
-            onChange={set('slug')}
+            onChange={handleKeyChange}
             placeholder="quyen"
             required
             className="input"
           />
         </Field>
 
-        <Field label="Display name">
-          <input value={form.name} onChange={set('name')} placeholder="Quyen" className="input" />
+        <Field label="Display name" hint="Auto-filled from your key — edit freely to override.">
+          <input value={form.name} onChange={handleNameChange} placeholder="Quyen" className="input" />
         </Field>
 
         <div className="grid grid-cols-3 gap-4">

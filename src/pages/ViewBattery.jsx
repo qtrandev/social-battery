@@ -10,6 +10,7 @@ import { computeBatteryState } from '../battery/model.js';
 import { bandForLevel } from '../battery/themes.js';
 import { fetchConfig, ApiError } from '../lib/api.js';
 import { getEditToken } from '../lib/ownership.js';
+import { deriveDisplayNameFromKey } from '../lib/displayName.js';
 
 export default function ViewBattery() {
   const { slug, version } = useParams();
@@ -53,6 +54,7 @@ export default function ViewBattery() {
   const battery = computeBatteryState(config, now);
   const band = bandForLevel(config.theme, battery.level);
   const editToken = !version ? getEditToken(slug) : null;
+  const displayName = config.name || deriveDisplayNameFromKey(slug);
 
   const background = config.coverImageUrl
     ? `url(${config.coverImageUrl}) center / cover`
@@ -75,7 +77,7 @@ export default function ViewBattery() {
             className="w-20 h-20 rounded-full object-cover border-2 border-white/70 shadow-lg"
           />
         )}
-        <h1 className="text-xl font-bold text-white/80">{config.name}</h1>
+        <h1 className="text-xl font-bold text-white/80">{displayName}</h1>
 
         {battery.awake ? (
           <BatteryGauge level={battery.level} theme={config.theme} orientation={orientation} />

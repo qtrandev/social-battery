@@ -1,6 +1,6 @@
 import { getStore } from '@netlify/blobs';
 import { randomUUID } from 'node:crypto';
-import { isValidSlug } from '../../src/lib/slug.js';
+import { SLUG_REGEX, RESERVED_SLUGS } from '../../src/lib/slug.js';
 import { validateFields } from '../../src/battery/validate.js';
 
 const json = (data, status = 200) =>
@@ -22,7 +22,8 @@ export default async (req) => {
   }
 
   const { slug, ...rest } = body ?? {};
-  if (!isValidSlug(slug)) return json({ error: 'invalid_slug' }, 400);
+  if (typeof slug !== 'string' || !SLUG_REGEX.test(slug)) return json({ error: 'invalid_slug' }, 400);
+  if (RESERVED_SLUGS.has(slug)) return json({ error: 'reserved' }, 400);
 
   const payload = {};
   for (const key of ALLOWED_FIELDS) if (key in rest) payload[key] = rest[key];
@@ -40,7 +41,7 @@ export default async (req) => {
     const record = {
       slug,
       editToken,
-      name: payload.name,
+      name: payload.name ?? null,
       wakeTime: payload.wakeTime,
       workEndTime: payload.workEndTime,
       sleepTime: payload.sleepTime,

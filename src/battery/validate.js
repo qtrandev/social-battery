@@ -32,7 +32,8 @@ function isValidOverride(value) {
 }
 
 const VALIDATORS = {
-  name: v => typeof v === 'string' && v.trim().length >= 1 && v.length <= MAX_NAME_LEN,
+  // null means "no display name set" — the UI derives one from the key/slug instead.
+  name: v => v === null || (typeof v === 'string' && v.trim().length >= 1 && v.length <= MAX_NAME_LEN),
   wakeTime: isValidHHMM,
   workEndTime: isValidHHMM,
   sleepTime: isValidHHMM,
@@ -43,7 +44,7 @@ const VALIDATORS = {
   lastOverride: isValidOverride,
 };
 
-const REQUIRED_ON_CREATE = ['name', 'wakeTime', 'workEndTime', 'sleepTime', 'timezone', 'theme'];
+const REQUIRED_ON_CREATE = ['wakeTime', 'workEndTime', 'sleepTime', 'timezone', 'theme'];
 
 /** Validates a flat field map. `partial: true` skips the required-on-create check (used by updates). */
 export function validateFields(payload, { partial }) {
