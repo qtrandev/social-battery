@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import Home from './Home.jsx';
 import { recordMyBattery } from '../lib/myBatteries.js';
+import { recordRecentlyViewed } from '../lib/recentlyViewed.js';
 
 beforeEach(() => {
   localStorage.clear();
@@ -28,6 +29,26 @@ describe('Home — "yours, on this device" list', () => {
     renderHome();
 
     expect(await screen.findByText(/yours, on this device/i)).toBeInTheDocument();
+
+    const links = screen.getAllByRole('link').filter(a => a.getAttribute('href')?.match(/^\/[^/]+$/) && a.getAttribute('href') !== '/new');
+    expect(links.map(a => a.getAttribute('href'))).toEqual(['/mike', '/quyen']);
+    expect(screen.getByText('Mike')).toBeInTheDocument();
+    expect(screen.getByText('Quyen')).toBeInTheDocument();
+  });
+});
+
+describe('Home — "recently viewed" list', () => {
+  it('shows nothing extra when this device has never viewed someone else\'s battery', () => {
+    renderHome();
+    expect(screen.queryByText(/recently viewed/i)).not.toBeInTheDocument();
+  });
+
+  it('lists viewed batteries, most recent first, linking to /:slug', async () => {
+    recordRecentlyViewed('quyen', 'Quyen');
+    recordRecentlyViewed('mike', 'Mike');
+    renderHome();
+
+    expect(await screen.findByText(/recently viewed/i)).toBeInTheDocument();
 
     const links = screen.getAllByRole('link').filter(a => a.getAttribute('href')?.match(/^\/[^/]+$/) && a.getAttribute('href') !== '/new');
     expect(links.map(a => a.getAttribute('href'))).toEqual(['/mike', '/quyen']);

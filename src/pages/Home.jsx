@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { listMyBatteries } from '../lib/myBatteries.js';
+import { listRecentlyViewed } from '../lib/recentlyViewed.js';
 
 export default function Home() {
   const [mine, setMine] = useState([]);
+  const [recent, setRecent] = useState([]);
 
   // Read once on mount rather than at module scope, since this is
   // per-browser state that server-rendering (if this ever gets any) wouldn't have.
   useEffect(() => {
     setMine(listMyBatteries());
+    setRecent(listRecentlyViewed());
   }, []);
 
   return (
@@ -36,6 +39,22 @@ export default function Home() {
               key={b.slug}
               to={`/${b.slug}`}
               className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-left transition-colors hover:border-emerald-400/50 hover:bg-white/10"
+            >
+              <span className="font-semibold text-white">{b.name}</span>
+              <span className="text-xs text-white/40">/{b.slug}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {recent.length > 0 && (
+        <div className="w-full max-w-sm flex flex-col gap-2">
+          <p className="text-xs font-semibold text-white/40 uppercase tracking-wide">Recently viewed</p>
+          {recent.map(b => (
+            <Link
+              key={b.slug}
+              to={`/${b.slug}`}
+              className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-left transition-colors hover:border-white/25 hover:bg-white/10"
             >
               <span className="font-semibold text-white">{b.name}</span>
               <span className="text-xs text-white/40">/{b.slug}</span>

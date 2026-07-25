@@ -12,6 +12,7 @@ import { bandForLevel } from '../battery/themes.js';
 import { fetchConfig, updateConfig, ApiError } from '../lib/api.js';
 import { getEditToken, clearEditToken } from '../lib/ownership.js';
 import { recordMyBattery } from '../lib/myBatteries.js';
+import { recordRecentlyViewed } from '../lib/recentlyViewed.js';
 import { deriveDisplayNameFromKey } from '../lib/displayName.js';
 
 export default function ViewBattery() {
@@ -49,6 +50,13 @@ export default function ViewBattery() {
     if (status !== 'ok' || !editToken || !config) return;
     recordMyBattery(slug, config.name || deriveDisplayNameFromKey(slug));
   }, [status, editToken, slug, config]);
+
+  // Lets someone who was just sent a link (no editToken, so not theirs) find
+  // their way back to it from the home page later.
+  useEffect(() => {
+    if (status !== 'ok' || editToken || version || !config) return;
+    recordRecentlyViewed(slug, config.name || deriveDisplayNameFromKey(slug));
+  }, [status, editToken, version, slug, config]);
 
   // Optimistic: the visual updates instantly from local state, and the save
   // happens in the background — dragging the gauge shouldn't feel like it's
