@@ -40,12 +40,10 @@ export default function CreateBattery() {
   }
 
   function handleNameChange(e) {
+    // Any direct edit — including clearing it to empty — is a deliberate
+    // choice, so it stops tracking Key for good rather than snapping back.
     const value = e.target.value;
-    setForm(prev =>
-      value === ''
-        ? { ...prev, name: deriveDisplayNameFromKey(prev.slug), nameSource: 'auto' }
-        : { ...prev, name: value, nameSource: 'manual' }
-    );
+    setForm(prev => ({ ...prev, name: value, nameSource: 'manual' }));
   }
 
   async function handleSubmit(e) {
@@ -162,11 +160,16 @@ export default function CreateBattery() {
 }
 
 function Field({ label, hint, children }) {
+  // Hint text lives outside the <label> on purpose — nesting it inside would
+  // fold it into the field's accessible name (screen readers would announce
+  // it every time the field is focused, and it breaks label-text lookups).
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-sm font-semibold text-white/80">{label}</span>
-      {children}
+    <div className="flex flex-col gap-1.5">
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-semibold text-white/80">{label}</span>
+        {children}
+      </label>
       {hint && <span className="text-xs text-white/40">{hint}</span>}
-    </label>
+    </div>
   );
 }
