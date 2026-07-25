@@ -49,6 +49,18 @@ export const THEMES = {
       { max: 100, color: '#64748b', face: '🙂', mood: 'Okay, for now' },
     ],
   },
+  // Inspired by the Zones of Regulation framework — blue/green/yellow/red as
+  // intensity, not good/bad. Red is deliberately not "great" the way 100% is
+  // in every other theme here: in ZoR it's elated *or* furious, just maxed out.
+  zones: {
+    label: 'Zones',
+    bands: [
+      { max: 25, color: '#3b82f6', face: '😔', mood: 'Blue zone - low and slow' },
+      { max: 50, color: '#22c55e', face: '🙂', mood: 'Green zone - calm and ready' },
+      { max: 75, color: '#eab308', face: '😬', mood: 'Yellow zone - wound up' },
+      { max: 100, color: '#ef4444', face: '🤯', mood: 'Red zone - maxed out' },
+    ],
+  },
 };
 
 export const THEME_KEYS = Object.keys(THEMES);
