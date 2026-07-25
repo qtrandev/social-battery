@@ -59,13 +59,23 @@ export function bandForLevel(theme, level) {
   return bands.find(b => level <= b.max) ?? bands[bands.length - 1];
 }
 
-/** CSS gradient stops (low → high) for the fill, built from a theme's bands. */
-export function gradientStops(theme) {
+/** A theme's bands annotated with their [from, to] range (0-100 each). */
+export function bandRanges(theme) {
   const bands = (THEMES[theme] ?? THEMES[DEFAULT_THEME]).bands;
   let prevMax = 0;
   return bands.map(b => {
-    const stop = { color: b.color, from: prevMax, to: b.max };
+    const range = { ...b, from: prevMax, to: b.max };
     prevMax = b.max;
-    return stop;
+    return range;
   });
+}
+
+/** CSS gradient stops (low → high) for the fill, built from a theme's bands. */
+export function gradientStops(theme) {
+  return bandRanges(theme).map(({ color, from, to }) => ({ color, from, to }));
+}
+
+/** The representative level for a band — its range midpoint, used by tap-to-set UI. */
+export function bandMidpoint(range) {
+  return Math.round((range.from + range.to) / 2);
 }

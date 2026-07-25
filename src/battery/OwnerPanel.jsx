@@ -1,44 +1,24 @@
 import { useState } from 'react';
-import { updateConfig, pinVersion, ApiError } from '../lib/api.js';
-import { clearEditToken } from '../lib/ownership.js';
+import { pinVersion } from '../lib/api.js';
 
 const PRESETS = [20, 50, 75, 100];
 
-export default function OwnerPanel({ slug, editToken, currentLevel, onChanged }) {
+export default function OwnerPanel({ slug, editToken, onSetLevel }) {
   const [open, setOpen] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [slider, setSlider] = useState(Math.round(currentLevel));
+  const [pinning, setPinning] = useState(false);
   const [pinnedVersion, setPinnedVersion] = useState(null);
-  const [error, setError] = useState(null);
-
-  async function setOverride(value) {
-    setPending(true);
-    setError(null);
-    try {
-      await updateConfig(slug, editToken, { lastOverride: { at: new Date().toISOString(), value } });
-      onChanged?.();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
-        clearEditToken(slug);
-        setError('This device no longer has edit access.');
-      } else {
-        setError('Could not update — try again.');
-      }
-    } finally {
-      setPending(false);
-    }
-  }
+  const [pinError, setPinError] = useState(null);
 
   async function handlePin() {
-    setPending(true);
-    setError(null);
+    setPinning(true);
+    setPinError(null);
     try {
       const { version } = await pinVersion(slug, editToken);
       setPinnedVersion(version);
     } catch {
-      setError('Could not pin a version — try again.');
+      setPinError('Could not pin a version — try again.');
     } finally {
-      setPending(false);
+      setPinning(false);
     }
   }
 
@@ -59,39 +39,22 @@ export default function OwnerPanel({ slug, editToken, currentLevel, onChanged })
         <div className="mt-2 w-64 rounded-xl bg-black/70 backdrop-blur-md p-4 flex flex-col gap-4 text-white">
           <div>
             <p className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Set level</p>
-            <div className="flex gap-2 mb-3">
+            <div className="flex gap-2">
               {PRESETS.map(p => (
                 <button
                   key={p}
-                  disabled={pending}
-                  onClick={() => setOverride(p)}
-                  className="flex-1 rounded-lg bg-white/10 py-1.5 text-sm font-semibold hover:bg-white/20 transition-colors disabled:opacity-40"
+                  onClick={() => onSetLevel(p)}
+                  className="flex-1 rounded-lg bg-white/10 py-1.5 text-sm font-semibold hover:bg-white/20 transition-colors"
                 >
                   {p}%
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={slider}
-                onChange={e => setSlider(Number(e.target.value))}
-                className="flex-1"
-              />
-              <button
-                disabled={pending}
-                onClick={() => setOverride(slider)}
-                className="rounded-lg bg-emerald-500 px-2.5 py-1 text-xs font-bold text-neutral-950 hover:bg-emerald-400 disabled:opacity-40"
-              >
-                Set
-              </button>
-            </div>
+            <p className="mt-2 text-[11px] text-white/40">Or drag the battery itself.</p>
           </div>
 
           <button
-            disabled={pending}
+            disabled={pinning}
             onClick={handlePin}
             className="rounded-lg bg-white/10 py-2 text-sm font-semibold hover:bg-white/20 transition-colors disabled:opacity-40"
           >
@@ -100,8 +63,7 @@ export default function OwnerPanel({ slug, editToken, currentLevel, onChanged })
           {pinnedVersion && (
             <p className="text-xs text-emerald-300">Pinned as /{slug}/{pinnedVersion}</p>
           )}
-
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {pinError && <p className="text-xs text-red-400">{pinError}</p>}
         </div>
       )}
     </div>

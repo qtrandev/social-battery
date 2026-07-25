@@ -26,3 +26,17 @@ body,
     @apply rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-white/30 outline-none transition-colors focus:border-emerald-400;
   }
 }
+
+@layer utilities {
+  /* Keeps text readable over an arbitrary user-supplied cover image, light or dark.
+     A hard, tight outline (no blur) reads as a crisp border — a soft blurred
+     shadow under translucent white text just mixes into a dull gray haze. */
+  .text-legible {
+    text-shadow:
+      -1px -1px 0 rgba(0, 0, 0, 0.85),
+       1px -1px 0 rgba(0, 0, 0, 0.85),
+      -1px  1px 0 rgba(0, 0, 0, 0.85),
+       1px  1px 0 rgba(0, 0, 0, 0.85),
+       0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { createConfig, ApiError } from '../lib/api.js';
 import { setEditToken } from '../lib/ownership.js';
+import { recordMyBattery } from '../lib/myBatteries.js';
 import { THEME_KEYS, THEMES, DEFAULT_THEME } from '../battery/themes.js';
 import { SLUG_REGEX, RESERVED_SLUGS } from '../lib/slug.js';
 import { deriveDisplayNameFromKey } from '../lib/displayName.js';
@@ -13,8 +14,6 @@ export default function CreateBattery() {
   const [form, setForm] = useState({
     slug: '',
     name: '',
-    // 'auto': Display name tracks Key. 'manual': user has typed their own — stop syncing.
-    nameSource: 'auto',
     wakeTime: '07:00',
     workEndTime: '18:00',
     sleepTime: '00:00',
@@ -31,19 +30,10 @@ export default function CreateBattery() {
   }
 
   function handleKeyChange(e) {
+    // Key always drives Display name, even overwriting a manually-typed one —
+    // editing Key again means the old suggestion was based on a stale key.
     const key = e.target.value;
-    setForm(prev =>
-      prev.nameSource === 'auto'
-        ? { ...prev, slug: key, name: deriveDisplayNameFromKey(key) }
-        : { ...prev, slug: key }
-    );
-  }
-
-  function handleNameChange(e) {
-    // Any direct edit — including clearing it to empty — is a deliberate
-    // choice, so it stops tracking Key for good rather than snapping back.
-    const value = e.target.value;
-    setForm(prev => ({ ...prev, name: value, nameSource: 'manual' }));
+    setForm(prev => ({ ...prev, slug: key, name: deriveDisplayNameFromKey(key) }));
   }
 
   async function handleSubmit(e) {
@@ -75,6 +65,7 @@ export default function CreateBattery() {
       };
       const result = await createConfig(payload);
       setEditToken(slug, result.editToken);
+      recordMyBattery(slug, payload.name || deriveDisplayNameFromKey(slug));
       navigate(`/${slug}`);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'taken') {
@@ -110,7 +101,7 @@ export default function CreateBattery() {
         </Field>
 
         <Field label="Display name" hint="Auto-filled from your key — edit freely to override.">
-          <input value={form.name} onChange={handleNameChange} placeholder="Quyen" className="input" />
+          <input value={form.name} onChange={set('name')} placeholder="Quyen" className="input" />
         </Field>
 
         <div className="grid grid-cols-3 gap-4">
