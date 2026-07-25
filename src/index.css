@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+@layer base {
+  body {
+    @apply bg-neutral-950 text-neutral-50 antialiased;
+    font-family: var(--font-display);
+  }
+
+  ::selection {
+    @apply bg-emerald-500/30 text-emerald-200;
+  }
+}
+
+@layer components {
+  .input {
+    @apply rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-white placeholder-white/30 outline-none transition-colors focus:border-emerald-400;
+  }
+}
