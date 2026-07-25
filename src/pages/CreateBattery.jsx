@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import { shellButtonClass } from '../shell/FullscreenShell.jsx';
 import { createConfig, ApiError } from '../lib/api.js';
 import { setEditToken } from '../lib/ownership.js';
 import { recordMyBattery } from '../lib/myBatteries.js';
@@ -81,7 +82,12 @@ export default function CreateBattery() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 px-6 py-12">
+    <div className="relative min-h-screen bg-neutral-950 px-6 py-12">
+      <Link to="/" className={`fixed top-3 right-3 z-20 ${shellButtonClass}`} aria-label="Go home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </Link>
       <form onSubmit={handleSubmit} className="mx-auto max-w-lg flex flex-col gap-6">
         <div>
           <h1 className="text-2xl font-black text-white">Set up your battery</h1>

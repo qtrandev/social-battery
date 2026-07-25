@@ -138,7 +138,7 @@ export default function ViewBattery() {
 
         {!editToken && guestLevel !== null && (
           <p className="absolute bottom-2 inset-x-0 text-center text-xs text-white/50 text-legible">
-            Just for you — not saved, resets on reload
+            Just for you - not saved, resets on reload
           </p>
         )}
       </div>
