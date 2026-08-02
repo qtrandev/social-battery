@@ -1,14 +1,30 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { pinVersion } from '../lib/api.js';
 import { formatClockTime } from '../lib/time.js';
 
 const PRESETS = [20, 50, 75, 100];
 
-export default function OwnerPanel({ slug, editToken, onSetLevel, awake, nextWake }) {
+export default function OwnerPanel({
+  slug,
+  editToken,
+  onSetLevel,
+  awake,
+  nextWake,
+  viewingVersion = null,
+  latestVersion = 0,
+  onPinned,
+}) {
   const [open, setOpen] = useState(false);
   const [pinning, setPinning] = useState(false);
   const [pinnedVersion, setPinnedVersion] = useState(null);
   const [pinError, setPinError] = useState(null);
+
+  const versionOptions =
+    typeof latestVersion === 'number' && latestVersion > 0
+      ? ['latest', ...Array.from({ length: latestVersion }, (_, i) => `v${i + 1}`)]
+      : [];
+  const activeVersion = viewingVersion ?? 'latest';
 
   async function handlePin() {
     setPinning(true);
@@ -16,6 +32,7 @@ export default function OwnerPanel({ slug, editToken, onSetLevel, awake, nextWak
     try {
       const { version } = await pinVersion(slug, editToken);
       setPinnedVersion(version);
+      onPinned?.();
     } catch {
       setPinError('Could not pin a version - try again.');
     } finally {
@@ -38,41 +55,80 @@ export default function OwnerPanel({ slug, editToken, onSetLevel, awake, nextWak
 
       {open && (
         <div className="mt-2 w-64 rounded-xl bg-black/70 backdrop-blur-md p-4 flex flex-col gap-4 text-white">
-          <div>
-            <p className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Set level</p>
-            {awake ? (
-              <>
-                <div className="flex gap-2">
-                  {PRESETS.map(p => (
-                    <button
-                      key={p}
-                      onClick={() => onSetLevel(p)}
-                      className="flex-1 rounded-lg bg-white/10 py-1.5 text-sm font-semibold hover:bg-white/20 transition-colors"
-                    >
-                      {p}%
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-2 text-[11px] text-white/40">Or drag the battery itself.</p>
-              </>
-            ) : (
-              <p className="text-xs text-white/40">
-                Recharging{nextWake ? ` until ${formatClockTime(nextWake)}` : ''} - level updates resume at wake.
-              </p>
-            )}
-          </div>
-
-          <button
-            disabled={pinning}
-            onClick={handlePin}
-            className="rounded-lg bg-white/10 py-2 text-sm font-semibold hover:bg-white/20 transition-colors disabled:opacity-40"
-          >
-            📌 Pin current state as a version
-          </button>
-          {pinnedVersion && (
-            <p className="text-xs text-emerald-300">Pinned as /{slug}/{pinnedVersion}</p>
+          {viewingVersion ? (
+            <p className="text-xs text-white/40">
+              Viewing a pinned snapshot ({viewingVersion}) - it's frozen, so level and settings can't be changed here.
+            </p>
+          ) : (
+            <div>
+              <p className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Set level</p>
+              {awake ? (
+                <>
+                  <div className="flex gap-2">
+                    {PRESETS.map(p => (
+                      <button
+                        key={p}
+                        onClick={() => onSetLevel(p)}
+                        className="flex-1 rounded-lg bg-white/10 py-1.5 text-sm font-semibold hover:bg-white/20 transition-colors"
+                      >
+                        {p}%
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[11px] text-white/40">Or drag the battery itself.</p>
+                </>
+              ) : (
+                <p className="text-xs text-white/40">
+                  Recharging{nextWake ? ` until ${formatClockTime(nextWake)}` : ''} - level updates resume at wake.
+                </p>
+              )}
+            </div>
           )}
-          {pinError && <p className="text-xs text-red-400">{pinError}</p>}
+
+          {versionOptions.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Versions</p>
+              <div className="flex flex-wrap gap-1.5">
+                {versionOptions.map(v => {
+                  const isActive = v === activeVersion;
+                  const label = v === 'latest' ? 'Latest' : v;
+                  return isActive ? (
+                    <span
+                      key={v}
+                      aria-current="page"
+                      className="rounded-lg bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/30"
+                    >
+                      {label}
+                    </span>
+                  ) : (
+                    <Link
+                      key={v}
+                      to={v === 'latest' ? `/${slug}` : `/${slug}/${v}`}
+                      className="rounded-lg bg-white/10 px-2.5 py-1 text-xs font-semibold hover:bg-white/20 transition-colors"
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {!viewingVersion && (
+            <>
+              <button
+                disabled={pinning}
+                onClick={handlePin}
+                className="rounded-lg bg-white/10 py-2 text-sm font-semibold hover:bg-white/20 transition-colors disabled:opacity-40"
+              >
+                📌 Pin current state as a version
+              </button>
+              {pinnedVersion && (
+                <p className="text-xs text-emerald-300">Pinned as /{slug}/{pinnedVersion}</p>
+              )}
+              {pinError && <p className="text-xs text-red-400">{pinError}</p>}
+            </>
+          )}
         </div>
       )}
     </div>

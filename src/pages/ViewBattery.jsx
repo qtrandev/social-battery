@@ -23,13 +23,30 @@ export default function ViewBattery() {
   const [guestLevel, setGuestLevel] = useState(null);
   const now = useNow(30_000);
   const orientation = useOrientation();
-  const editToken = !version ? getEditToken(slug) : null;
+  // ownerToken: does this browser hold the edit token for this slug at all.
+  // editToken: is editing actually allowed on *this* render — never true for
+  // a pinned snapshot, since dragging/settings act on the live config, not
+  // the frozen version being viewed.
+  const ownerToken = getEditToken(slug);
+  const editToken = !version ? ownerToken : null;
+  const [liveLatestVersion, setLiveLatestVersion] = useState(null);
 
   // Guests (no editToken) can still tap/drag the gauge to see "what if" —
   // it's purely local, never saved, so someone can temporarily reuse a
   // shared display without touching the owner's actual status. Reset it
   // whenever we land on a different battery.
   useEffect(() => { setGuestLevel(null); }, [slug, version]);
+
+  // A pinned snapshot never carries latestVersion (pin-version.js strips it,
+  // since it'd go stale the moment another version gets pinned) — so to let
+  // an owner browsing an old version jump to other versions, fetch the live
+  // config just for an up-to-date count.
+  useEffect(() => {
+    if (!version || !ownerToken) { setLiveLatestVersion(null); return; }
+    let cancelled = false;
+    fetchConfig(slug).then(data => { if (!cancelled) setLiveLatestVersion(data.latestVersion ?? 0); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [slug, version, ownerToken]);
 
   const load = useCallback(async () => {
     try {
@@ -111,15 +128,10 @@ export default function ViewBattery() {
     </button>
   );
 
+  const latestVersionCount = version ? liveLatestVersion : (config.latestVersion ?? 0);
+
   return (
     <FullscreenShell background={background} topRightExtra={editButton}>
-      {version && (
-        <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-center gap-3 bg-amber-500/90 py-2 text-sm font-semibold text-neutral-950">
-          Viewing pinned version {version}
-          <Link to={`/${slug}`} className="underline">View latest</Link>
-        </div>
-      )}
-
       <div className="h-full flex flex-col items-center justify-center gap-[clamp(0.25rem,2dvh,1rem)] overflow-hidden py-[clamp(0.25rem,2dvh,1rem)]">
         {config.profileImageUrl && (
           <img
@@ -151,13 +163,16 @@ export default function ViewBattery() {
         )}
       </div>
 
-      {editToken && (
+      {ownerToken && (
         <OwnerPanel
           slug={slug}
-          editToken={editToken}
+          editToken={ownerToken}
           onSetLevel={applyOverride}
           awake={battery.awake}
           nextWake={battery.nextWake}
+          viewingVersion={version ?? null}
+          latestVersion={latestVersionCount}
+          onPinned={load}
         />
       )}
 
