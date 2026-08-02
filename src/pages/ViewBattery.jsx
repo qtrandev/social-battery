@@ -92,6 +92,20 @@ export default function ViewBattery() {
     }
   }
 
+  // Clears the manual override so the level goes back to the default
+  // wake→work-end→sleep trajectory, same as a battery no one has touched.
+  async function resetOverride() {
+    const editToken = getEditToken(slug);
+    if (!editToken) return;
+    setConfig(prev => (prev ? { ...prev, lastOverride: null } : prev));
+    try {
+      await updateConfig(slug, editToken, { lastOverride: null });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403) clearEditToken(slug);
+      load();
+    }
+  }
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-950">
@@ -168,6 +182,8 @@ export default function ViewBattery() {
           slug={slug}
           editToken={ownerToken}
           onSetLevel={applyOverride}
+          onReset={resetOverride}
+          hasOverride={Boolean(battery.overridden)}
           awake={battery.awake}
           nextWake={battery.nextWake}
           viewingVersion={version ?? null}

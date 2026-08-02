@@ -50,6 +50,7 @@ export function computeBatteryState(config, now = new Date()) {
     { at: sleep, value: FLOOR_VALUE },
   ];
 
+  let overridden = false;
   const override = config.lastOverride;
   if (override?.at) {
     const overrideAt = new Date(override.at);
@@ -57,9 +58,10 @@ export function computeBatteryState(config, now = new Date()) {
     // wake window is ignored, and the default trajectory resumes untouched.
     if (overrideAt >= wake && overrideAt < sleep) {
       timeline = reanchorTimeline(overrideAt, override.value, sleep, FLOOR_VALUE);
+      overridden = true;
     }
   }
 
   const level = valueAt(timeline, now);
-  return { level, awake: true, wake, workEnd, sleep, timeline };
+  return { level, awake: true, wake, workEnd, sleep, timeline, overridden };
 }

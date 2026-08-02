@@ -31,6 +31,27 @@ describe('OwnerPanel — while awake', () => {
   });
 });
 
+describe('OwnerPanel — reset to default', () => {
+  it('hides the reset button when there is no active override', async () => {
+    renderPanel(<OwnerPanel slug="quyen" editToken="t" onSetLevel={vi.fn()} awake={true} hasOverride={false} />);
+    await openPanel();
+
+    expect(screen.queryByRole('button', { name: /reset to default/i })).not.toBeInTheDocument();
+  });
+
+  it('shows the reset button and calls onReset when there is an active override', async () => {
+    const onReset = vi.fn();
+    renderPanel(
+      <OwnerPanel slug="quyen" editToken="t" onSetLevel={vi.fn()} onReset={onReset} awake={true} hasOverride={true} />
+    );
+    const user = await openPanel();
+
+    await user.click(screen.getByRole('button', { name: /reset to default/i }));
+
+    expect(onReset).toHaveBeenCalled();
+  });
+});
+
 describe('OwnerPanel — while asleep (outside wake↔sleep window)', () => {
   it('hides the level presets instead of letting them silently no-op', async () => {
     const onSetLevel = vi.fn();

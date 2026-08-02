@@ -9,6 +9,8 @@ export default function OwnerPanel({
   slug,
   editToken,
   onSetLevel,
+  onReset,
+  hasOverride = false,
   awake,
   nextWake,
   viewingVersion = null,
@@ -65,6 +67,16 @@ export default function OwnerPanel({
               {awake ? (
                 <>
                   <div className="flex gap-2">
+                    {hasOverride && (
+                      <button
+                        onClick={onReset}
+                        aria-label="Reset to default level"
+                        title="Reset to default"
+                        className="rounded-lg bg-white/10 px-2.5 text-sm hover:bg-white/20 transition-colors"
+                      >
+                        🔄
+                      </button>
+                    )}
                     {PRESETS.map(p => (
                       <button
                         key={p}

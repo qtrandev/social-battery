@@ -63,4 +63,14 @@ describe('computeBatteryState — manual override', () => {
     const twiceOverridden = { ...config, lastOverride: { at: chicagoTime('15:00').toISOString(), value: 30 } };
     expect(computeBatteryState(twiceOverridden, chicagoTime('15:00')).level).toBe(30);
   });
+
+  it('reports overridden: true only when an active override is actually applied', () => {
+    expect(computeBatteryState(config, chicagoTime('12:00')).overridden).toBe(false);
+
+    const active = { ...config, lastOverride: { at: chicagoTime('12:00').toISOString(), value: 40 } };
+    expect(computeBatteryState(active, chicagoTime('12:30')).overridden).toBe(true);
+
+    const stale = { ...config, lastOverride: { at: '2026-07-24T17:00:00-05:00', value: 90 } };
+    expect(computeBatteryState(stale, chicagoTime('07:00')).overridden).toBe(false);
+  });
 });
