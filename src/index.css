@@ -4,6 +4,19 @@
   --font-display: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
+/* Tap feedback for the floating game icons (FloatingIcons.jsx) — the "+7%"
+   that floats up and fades out after tapping a boost/drain icon. */
+@keyframes float-up {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-2.75rem) scale(1.15);
+  }
+}
+
 html,
 body,
 #root {

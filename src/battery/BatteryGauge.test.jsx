@@ -26,7 +26,7 @@ describe('BatteryGauge — tap-to-jump face row (energetic theme: bands end at 1
     const onCommit = vi.fn();
     render(<BatteryGauge level={50} theme="energetic" orientation="landscape" onCommit={onCommit} />);
 
-    const faces = screen.getAllByRole('button');
+    const faces = screen.getAllByRole('button', { name: /set level to/i });
     expect(faces).toHaveLength(5);
 
     fireEvent.click(faces[0]); // band [0, 15] -> midpoint 8
@@ -42,7 +42,7 @@ describe('BatteryGauge — tap-to-jump face row (energetic theme: bands end at 1
     const onCommit = vi.fn();
     render(<BatteryGauge level={50} theme="energetic" orientation="portrait" onCommit={onCommit} />);
 
-    fireEvent.click(screen.getAllByRole('button')[2]); // band [35, 55] -> midpoint 45
+    fireEvent.click(screen.getAllByRole('button', { name: /set level to/i })[2]); // band [35, 55] -> midpoint 45
     expect(onCommit).toHaveBeenCalledWith(45);
   });
 });
@@ -106,6 +106,37 @@ describe('BatteryGauge — dragging (portrait: bottom=0%, top=100%)', () => {
     fireEvent.pointerUp(track, { clientX: 100, clientY: 125, pointerId: 1 });
 
     expect(onCommit).toHaveBeenCalledWith(75);
+  });
+});
+
+describe('BatteryGauge — tap-to-adjust game icons', () => {
+  it('nudges the current level by the tapped icon\'s delta, clamped to 0-100', () => {
+    const onCommit = vi.fn();
+    render(<BatteryGauge level={50} theme="energetic" orientation="landscape" onCommit={onCommit} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /coffee: \+7%/i }));
+    expect(onCommit).toHaveBeenLastCalledWith(57);
+
+    fireEvent.click(screen.getByRole('button', { name: /low battery: -10%/i }));
+    expect(onCommit).toHaveBeenLastCalledWith(40);
+  });
+
+  it('clamps at the ceiling and floor', () => {
+    const onCommit = vi.fn();
+    const { rerender } = render(
+      <BatteryGauge level={95} theme="energetic" orientation="landscape" onCommit={onCommit} />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /energy boost: \+10%/i }));
+    expect(onCommit).toHaveBeenLastCalledWith(100);
+
+    rerender(<BatteryGauge level={5} theme="energetic" orientation="landscape" onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole('button', { name: /low battery: -10%/i }));
+    expect(onCommit).toHaveBeenLastCalledWith(0);
+  });
+
+  it('renders no game icons for a non-editable (viewer) gauge', () => {
+    render(<BatteryGauge level={50} theme="energetic" orientation="landscape" />);
+    expect(screen.queryByRole('button', { name: /coffee/i })).not.toBeInTheDocument();
   });
 });
 

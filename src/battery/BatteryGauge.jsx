@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { DEFAULT_THEME, bandForLevel, bandRanges, bandMidpoint, gradientStops } from './themes.js';
 import { WORK_END_VALUE } from './model.js';
+import FloatingIcons from './FloatingIcons.jsx';
+import { BOOST_ICONS, DRAIN_ICONS } from './energyIcons.js';
 
 /**
  * The battery-shaped meter itself — landscape renders as the familiar wide
@@ -59,6 +61,111 @@ export default function BatteryGauge({ level, theme = DEFAULT_THEME, orientation
     setDragLevel(null);
   }
 
+  // The tap-to-adjust "game" icons floating beside the gauge — separate from
+  // dragging, so a tap just nudges the *current* value by the icon's delta.
+  function handleGameTap(delta) {
+    if (!editable) return;
+    onCommit(Math.max(0, Math.min(100, Math.round(clamped + delta))));
+  }
+
+  const batteryShape = (
+    <div
+      className={
+        isLandscape
+          ? 'relative w-full h-[min(30cqw,75cqh)]'
+          : 'relative h-full w-[min(40cqh,100cqw)]'
+      }
+    >
+      {/* nub */}
+      <div
+        className={
+          isLandscape
+            ? 'absolute -right-3 top-1/2 -translate-y-1/2 w-3 h-1/4 rounded-r-md bg-white/80'
+            : 'absolute -top-3 left-1/2 -translate-x-1/2 h-3 w-1/4 rounded-t-md bg-white/80'
+        }
+      />
+      {/* outline — the draggable track, when editable */}
+      <div
+        ref={trackRef}
+        role={editable ? 'slider' : undefined}
+        aria-label={editable ? 'Social battery level' : undefined}
+        aria-valuenow={editable ? Math.round(clamped) : undefined}
+        aria-valuemin={editable ? 0 : undefined}
+        aria-valuemax={editable ? 100 : undefined}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+        className={`relative w-full h-full rounded-[2rem] border-[6px] border-white/80 overflow-hidden bg-black/20 ${
+          editable ? 'cursor-grab active:cursor-grabbing touch-none' : ''
+        }`}
+      >
+        {/* fill */}
+        <div
+          className={`absolute bottom-0 left-0 ${isDragging ? '' :'transition-[width,height] duration-1000 ease-out'}`}
+          style={{
+            background: gradientCss,
+            width: isLandscape ? `${clamped}%` : '100%',
+            height: isLandscape ? '100%' : `${clamped}%`,
+          }}
+        />
+        {/* work-end reference — where the default trajectory expects you to be by work-end, always */}
+        <div
+          data-testid="work-end-marker"
+          className="absolute bg-white/40 pointer-events-none"
+          style={
+            isLandscape
+              ? { left: `${WORK_END_VALUE}%`, top: 0, bottom: 0, width: '2px', transform: 'translateX(-50%)' }
+              : { bottom: `${WORK_END_VALUE}%`, left: 0, right: 0, height: '2px', transform: 'translateY(50%)' }
+          }
+        />
+        {/* lightning bolt at the fill boundary — also the drag handle */}
+        <div
+          className={`absolute flex items-center justify-center drop-shadow-[0_0_6px_rgba(0,0,0,0.5)] ${
+            isDragging ? '' :'transition-all duration-1000 ease-out'
+          }`}
+          style={
+            isLandscape
+              ? { left: `${clamped}%`, top: '50%', transform: 'translate(-50%, -50%)' }
+              : { bottom: `${clamped}%`, left: '50%', transform: 'translate(-50%, 50%)' }
+          }
+        >
+          <span className={`text-3xl text-white ${editable ? 'scale-125' : ''}`}>⚡</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Always claims the full width (landscape) or full height (portrait) of
+  // the space it's given; the other dimension self-limits via container
+  // query units so it can't overflow a short/narrow screen. Flanked by the
+  // tap-to-adjust game icons: boost (left) / drain (right) beside it in
+  // portrait, or boost (above) / drain (below) it in landscape.
+  const fitBox = (
+    <div className="relative flex-1 min-h-0 w-full flex items-center justify-center [container-type:size]">
+      {batteryShape}
+    </div>
+  );
+
+  const boostZone = (
+    <FloatingIcons
+      icons={BOOST_ICONS}
+      onTap={handleGameTap}
+      tone="boost"
+      editable={editable}
+      className={isLandscape ? 'w-full h-[clamp(2.5rem,10dvh,4rem)] shrink-0' : 'h-full w-[clamp(2.75rem,16dvw,4.5rem)] shrink-0'}
+    />
+  );
+  const drainZone = (
+    <FloatingIcons
+      icons={DRAIN_ICONS}
+      onTap={handleGameTap}
+      tone="drain"
+      editable={editable}
+      className={isLandscape ? 'w-full h-[clamp(2.5rem,10dvh,4rem)] shrink-0' : 'h-full w-[clamp(2.75rem,16dvw,4.5rem)] shrink-0'}
+    />
+  );
+
   return (
     <div
       className={
@@ -94,80 +201,19 @@ export default function BatteryGauge({ level, theme = DEFAULT_THEME, orientation
         })}
       </div>
 
-      {/* ── The battery shape — always claims the full width (landscape) or
-          full height (portrait) of the space it's given, so it reads big;
-          the other dimension follows the usual battery proportions but
-          self-limits via container query units so it can't overflow on a
-          short/narrow screen (it just reads flatter/narrower there). In
-          landscape it's deliberately capped at 75% of that so the readout
-          and face row get more room to grow instead of the bar hogging it. ── */}
-      <div className="relative flex-1 min-h-0 w-full flex items-center justify-center [container-type:size]">
-        <div
-          className={
-            isLandscape
-              ? 'relative w-full h-[min(30cqw,75cqh)]'
-              : 'relative h-full w-[min(40cqh,100cqw)]'
-          }
-        >
-          {/* nub */}
-          <div
-            className={
-              isLandscape
-                ? 'absolute -right-3 top-1/2 -translate-y-1/2 w-3 h-1/4 rounded-r-md bg-white/80'
-                : 'absolute -top-3 left-1/2 -translate-x-1/2 h-3 w-1/4 rounded-t-md bg-white/80'
-            }
-          />
-          {/* outline — the draggable track, when editable */}
-          <div
-            ref={trackRef}
-            role={editable ? 'slider' : undefined}
-            aria-label={editable ? 'Social battery level' : undefined}
-            aria-valuenow={editable ? Math.round(clamped) : undefined}
-            aria-valuemin={editable ? 0 : undefined}
-            aria-valuemax={editable ? 100 : undefined}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerCancel}
-            className={`relative w-full h-full rounded-[2rem] border-[6px] border-white/80 overflow-hidden bg-black/20 ${
-              editable ? 'cursor-grab active:cursor-grabbing touch-none' : ''
-            }`}
-          >
-            {/* fill */}
-            <div
-              className={`absolute bottom-0 left-0 ${isDragging ? '' :'transition-[width,height] duration-1000 ease-out'}`}
-              style={{
-                background: gradientCss,
-                width: isLandscape ? `${clamped}%` : '100%',
-                height: isLandscape ? '100%' : `${clamped}%`,
-              }}
-            />
-            {/* work-end reference — where the default trajectory expects you to be by work-end, always */}
-            <div
-              data-testid="work-end-marker"
-              className="absolute bg-white/40 pointer-events-none"
-              style={
-                isLandscape
-                  ? { left: `${WORK_END_VALUE}%`, top: 0, bottom: 0, width: '2px', transform: 'translateX(-50%)' }
-                  : { bottom: `${WORK_END_VALUE}%`, left: 0, right: 0, height: '2px', transform: 'translateY(50%)' }
-              }
-            />
-            {/* lightning bolt at the fill boundary — also the drag handle */}
-            <div
-              className={`absolute flex items-center justify-center drop-shadow-[0_0_6px_rgba(0,0,0,0.5)] ${
-                isDragging ? '' :'transition-all duration-1000 ease-out'
-              }`}
-              style={
-                isLandscape
-                  ? { left: `${clamped}%`, top: '50%', transform: 'translate(-50%, -50%)' }
-                  : { bottom: `${clamped}%`, left: '50%', transform: 'translate(-50%, 50%)' }
-              }
-            >
-              <span className={`text-3xl text-white ${editable ? 'scale-125' : ''}`}>⚡</span>
-            </div>
-          </div>
+      {isLandscape ? (
+        <>
+          {boostZone}
+          {fitBox}
+          {drainZone}
+        </>
+      ) : (
+        <div className="flex flex-1 min-h-0 w-full">
+          {boostZone}
+          {fitBox}
+          {drainZone}
         </div>
-      </div>
+      )}
 
       {/* ── Readout — sized off dvh, not a fixed rem, so it yields room to the gauge on short screens ── */}
       <div className="flex flex-col items-center gap-1 shrink-0 max-w-full px-2">
