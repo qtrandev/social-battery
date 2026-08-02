@@ -81,13 +81,13 @@ export default function BatteryGauge({ level, theme = DEFAULT_THEME, orientation
               type="button"
               onClick={() => onCommit(bandMidpoint(r))}
               aria-label={`Set level to ${r.mood}`}
-              className="text-[clamp(1rem,4dvh,1.5rem)] transition-all duration-500 cursor-pointer"
+              className="text-[clamp(1rem,5dvh,2.5rem)] transition-all duration-500 cursor-pointer"
               style={style}
             >
               {r.face}
             </button>
           ) : (
-            <span key={r.max} className="text-[clamp(1rem,4dvh,1.5rem)] transition-all duration-500" style={style}>
+            <span key={r.max} className="text-[clamp(1rem,5dvh,2.5rem)] transition-all duration-500" style={style}>
               {r.face}
             </span>
           );
@@ -98,12 +98,14 @@ export default function BatteryGauge({ level, theme = DEFAULT_THEME, orientation
           full height (portrait) of the space it's given, so it reads big;
           the other dimension follows the usual battery proportions but
           self-limits via container query units so it can't overflow on a
-          short/narrow screen (it just reads flatter/narrower there) ── */}
+          short/narrow screen (it just reads flatter/narrower there). In
+          landscape it's deliberately capped at 75% of that so the readout
+          and face row get more room to grow instead of the bar hogging it. ── */}
       <div className="relative flex-1 min-h-0 w-full flex items-center justify-center [container-type:size]">
         <div
           className={
             isLandscape
-              ? 'relative w-full h-[min(40cqw,100cqh)]'
+              ? 'relative w-full h-[min(30cqw,75cqh)]'
               : 'relative h-full w-[min(40cqh,100cqw)]'
           }
         >
@@ -170,10 +172,10 @@ export default function BatteryGauge({ level, theme = DEFAULT_THEME, orientation
       {/* ── Readout — sized off dvh, not a fixed rem, so it yields room to the gauge on short screens ── */}
       <div className="flex flex-col items-center gap-1 shrink-0">
         <div className="flex items-baseline gap-3">
-          <span className="text-[clamp(1.75rem,7dvh,3.75rem)]">{band.face}</span>
-          <span className="text-[clamp(1.5rem,6dvh,3rem)] font-black tabular-nums text-white text-legible">{Math.round(clamped)}%</span>
+          <span className="text-[clamp(1.75rem,9dvh,5.5rem)]">{band.face}</span>
+          <span className="text-[clamp(1.5rem,8dvh,4.5rem)] font-black tabular-nums text-white text-legible">{Math.round(clamped)}%</span>
         </div>
-        <p className="text-[clamp(0.9rem,3dvh,1.875rem)] text-white font-medium text-legible">{band.mood}</p>
+        <p className="text-[clamp(0.9rem,4dvh,2.5rem)] text-white font-medium text-legible">{band.mood}</p>
       </div>
     </div>
   );

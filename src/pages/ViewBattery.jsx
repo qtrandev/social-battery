@@ -129,7 +129,7 @@ export default function ViewBattery() {
             style={{ width: 'clamp(1.75rem, 8dvh, 5rem)', height: 'clamp(1.75rem, 8dvh, 5rem)' }}
           />
         )}
-        <h1 className="shrink-0 font-bold text-white text-legible text-[clamp(1rem,5dvh,3rem)]">
+        <h1 className="shrink-0 font-bold text-white text-legible text-[clamp(1rem,6dvh,4.5rem)]">
           {displayName}
         </h1>
 
