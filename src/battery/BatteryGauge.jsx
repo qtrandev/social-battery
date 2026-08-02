@@ -170,12 +170,21 @@ export default function BatteryGauge({ level, theme = DEFAULT_THEME, orientation
       </div>
 
       {/* ── Readout — sized off dvh, not a fixed rem, so it yields room to the gauge on short screens ── */}
-      <div className="flex flex-col items-center gap-1 shrink-0">
+      <div className="flex flex-col items-center gap-1 shrink-0 max-w-full px-2">
         <div className="flex items-baseline gap-3">
           <span className="text-[clamp(1.75rem,9dvh,5.5rem)]">{band.face}</span>
           <span className="text-[clamp(1.5rem,8dvh,4.5rem)] font-black tabular-nums text-white text-legible">{Math.round(clamped)}%</span>
         </div>
-        <p className="text-[clamp(0.9rem,4dvh,2.5rem)] text-white font-medium text-legible">{band.mood}</p>
+        {/* Some theme mood strings run long (e.g. "Green zone - calm and
+            ready") — shrink the cap a bit for those, and center + balance
+            as the guaranteed fallback for whatever still wraps. */}
+        <p
+          className={`text-center text-balance text-white font-medium text-legible ${
+            band.mood.length > 18 ? 'text-[clamp(0.8rem,3dvh,1.75rem)]' : 'text-[clamp(0.9rem,4dvh,2.5rem)]'
+          }`}
+        >
+          {band.mood}
+        </p>
       </div>
     </div>
   );

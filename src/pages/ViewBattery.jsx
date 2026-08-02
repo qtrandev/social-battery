@@ -144,9 +144,20 @@ export default function ViewBattery() {
 
   const latestVersionCount = version ? liveLatestVersion : (config.latestVersion ?? 0);
 
+  // A long display name would otherwise blow past the max font size and wrap
+  // full-width, left-aligned and overflowing — shrink the cap as it gets
+  // longer so it's more likely to fit on one line; text-balance and centering
+  // below are the guaranteed fallback for whatever still wraps.
+  const headingSizeClass =
+    displayName.length > 20
+      ? 'text-[clamp(0.85rem,4dvh,2rem)]'
+      : displayName.length > 12
+        ? 'text-[clamp(0.9rem,5dvh,2.75rem)]'
+        : 'text-[clamp(1rem,6dvh,4.5rem)]';
+
   return (
     <FullscreenShell background={background} topRightExtra={editButton}>
-      <div className="h-full flex flex-col items-center justify-center gap-[clamp(0.25rem,2dvh,1rem)] overflow-hidden py-[clamp(0.25rem,2dvh,1rem)]">
+      <div className="h-full flex flex-col items-center justify-center gap-[clamp(0.25rem,2dvh,1rem)] overflow-hidden px-[clamp(0.75rem,3dvw,2rem)] py-[clamp(0.25rem,2dvh,1rem)]">
         {config.profileImageUrl && (
           <img
             src={config.profileImageUrl}
@@ -155,7 +166,7 @@ export default function ViewBattery() {
             style={{ width: 'clamp(1.75rem, 8dvh, 5rem)', height: 'clamp(1.75rem, 8dvh, 5rem)' }}
           />
         )}
-        <h1 className="shrink-0 font-bold text-white text-legible text-[clamp(1rem,6dvh,4.5rem)]">
+        <h1 className={`shrink-0 text-center text-balance font-bold text-white text-legible ${headingSizeClass}`}>
           {displayName}
         </h1>
 
